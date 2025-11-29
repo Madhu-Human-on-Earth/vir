@@ -1,12 +1,15 @@
-# Use a small coturn image
+# Dockerfile - coturn for Railway
 FROM instrumentisto/coturn:latest
 
-# Copy config into container
-COPY turnserver.conf /etc/turnserver.conf
+# install envsubst (from gettext) if not present (some images already have it)
+USER root
+RUN apt-get update && apt-get install -y gettext-base && rm -rf /var/lib/apt/lists/*
 
-# Expose TCP ports (Railway will map them)
+COPY turnserver.conf /etc/turnserver.conf
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 3478/tcp
 EXPOSE 5349/tcp
 
-# Start coturn in foreground using config
-CMD ["turnserver", "-c", "/etc/turnserver.conf", "--no-daemon"]
+ENTRYPOINT ["/entrypoint.sh"]
